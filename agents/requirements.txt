@@ -1,0 +1,21 @@
+Motivation:
+Create a simple Python system to analyze monthly expenses from a .csv file.
+
+Functionalities:
+- read the .csv file
+- calculate total expenses
+- calculate average expense
+- display the highest expense
+
+Inputs:
+- .csv file containing expense values
+
+Outputs:
+- total expenses
+- average expense
+- highest expense
+
+Restrictions:
+- use Python
+- use pandas
+- terminal interface only
