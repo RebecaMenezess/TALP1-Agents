@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 **3. Run**
 ```bash
-python agent.py
+python code_generator_agent.py
 ```
 
 When prompted, describe the program you want, for example:
