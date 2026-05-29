@@ -1,0 +1,1 @@
+from codigo_candidato import calcular_media
