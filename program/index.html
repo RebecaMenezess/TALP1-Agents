@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentes Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-base: #0d1117;
+    --surface: rgba(23, 51, 107, 0.25);
+    --surface-hover: rgba(23, 51, 107, 0.45);
+    --border: #17336b;
+    --py-blue: #4b8bbe;
+    --py-blue-light: #6baed6;
+    --py-yellow: #ffd43b;
+    --py-yellow-muted: #f0c030;
+    --text-main: #e8edf5;
+    --text-muted: #7a99c2;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  body {
+    font-family: var(--sans);
+    background: var(--bg-base);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-image: radial-gradient(circle at 15% 50%, rgba(23,51,107,0.25), transparent 30%), radial-gradient(circle at 85% 20%, rgba(75,139,190,0.06), transparent 30%);
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--py-blue); }
+  header {
+    padding: 14px 24px;
+    background: rgba(13,17,23,0.9);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 10;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 10px; }
+  .py-logo { width: 28px; height: 28px; flex-shrink: 0; }
+  header h1 { font-size: 1rem; font-weight: 500; letter-spacing: 0.3px; color: var(--text-main); font-family: var(--sans); }
+  .badge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    padding: 5px 12px;
+    background: rgba(75,139,190,0.12);
+    border: 1px solid var(--py-blue);
+    border-radius: 20px;
+    color: var(--py-yellow);
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-family: var(--sans);
+  }
+  main { flex: 1; display: flex; height: calc(100vh - 57px); padding: 16px; gap: 16px; }
+  .sidebar {
+    width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+  }
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-family: var(--sans);
+  }
+  textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    padding: 14px;
+    resize: none;
+    height: 145px;
+    outline: none;
+    transition: var(--transition);
+  }
+  textarea:focus { border-color: var(--py-blue); }
+  textarea::placeholder { color: #3a5a80; }
+  .examples { display: flex; flex-direction: column; gap: 7px; }
+  .example-btn {
+    background: rgba(0,0,0,0.18);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    padding: 9px 13px;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: var(--transition);
+  }
+  .example-btn:hover { border-color: var(--py-blue); color: var(--text-main); background: var(--surface-hover); transform: translateX(4px); }
+  .run-btn {
+    background: linear-gradient(135deg, #17336b 0%, #4b8bbe 100%);
+    border: 1px solid var(--py-blue-light);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--sans);
+    border-radius: 8px;
+    transition: var(--transition);
+  }
+  .run-btn:hover:not(:disabled) { background: linear-gradient(135deg, #1e4080 0%, #6baed6 100%); transform: translateY(-1px); }
+  .run-btn:active:not(:disabled) { transform: translateY(0); }
+  .run-btn:disabled { background: rgba(23,51,107,0.2); color: var(--text-muted); border-color: var(--border); cursor: not-allowed; }
+  .pipeline-container { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
+  .agent-step { border-left: 2px solid var(--border); padding-left: 18px; margin-bottom: 20px; position: relative; transition: var(--transition); }
+  .agent-step:last-child { margin-bottom: 0; }
+  .agent-step::before {
+    content: '';
+    position: absolute;
+    left: -7px; top: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg-base);
+    border: 2px solid var(--border);
+    transition: var(--transition);
+  }
+  .step.running { border-color: var(--py-yellow); }
+  .step.running::before { border-color: var(--py-yellow); background: var(--py-yellow); }
+  .step.done { border-color: var(--py-blue); }
+  .step.done::before { border-color: var(--py-blue); background: var(--py-blue); }
+  .step.error { border-color: #e05252; }
+  .step.error::before { background: #e05252; border-color: #e05252; }
+  .step-title { font-size: 0.87rem; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-family: var(--sans); }
+  .step-status { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 12px; font-family: var(--sans); }
+  .step.running .step-status { color: var(--py-yellow); }
+  .step.done .step-status { color: var(--py-blue-light); }
+  .step-status.soon { color: #e8888c; background: rgba(168,46,55,0.15); }
+  .step-logs {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    max-height: 60px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.2);
+    padding: 9px;
+    border-radius: 6px;
+    margin-top: 8px;
+    border: 1px solid transparent;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .step-logs:hover { max-height: 200px; }
+  .step.running .step-logs { border-color: rgba(255,212,59,0.2); }
+  .editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+  }
+  .tabs { display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border); }
+  .tab { padding: 13px 22px; font-size: 0.83rem; font-weight: 500; color: var(--text-muted); background: transparent; border: none; cursor: pointer; font-family: var(--sans); position: relative; transition: var(--transition); }
+  .tab::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: transparent; transition: var(--transition); }
+  .tab.active { color: var(--py-yellow); }
+  .tab.active::after { background: var(--py-yellow); }
+  .tab:hover:not(.active) { color: var(--text-main); }
+  .tab-content { display: none; flex: 1; overflow: hidden; position: relative; }
+  .tab-content.active { display: flex; flex-direction: column; }
+  .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 11px 18px; background: rgba(23,51,107,0.12); border-bottom: 1px solid var(--border); }
+  .file-name { font-family: var(--mono); font-size: 0.82rem; color: var(--py-blue-light); }
+  .action-btn { background: rgba(75,139,190,0.12); border: 1px solid var(--py-blue); color: var(--py-blue-light); border-radius: 6px; font-size: 0.72rem; font-weight: 600; padding: 5px 13px; cursor: pointer; display: none; transition: var(--transition); font-family: var(--sans); }
+  .action-btn:hover { background: var(--py-blue); color: #fff; }
+  .action-btn.visible { display: block; }
+  pre { flex: 1; font-family: var(--mono); font-size: 0.92rem; line-height: 1.65; padding: 22px; overflow: auto; color: #c9d8eb; }
+  .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: var(--text-muted); font-family: var(--mono); font-size: 0.88rem; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .empty-icon { font-size: 2.2rem; color: var(--border); }
+  .log-icon { font-family: var(--mono); font-size: 1rem; color: var(--border); letter-spacing: -1px; }
+  .log-ok { color: var(--py-blue-light); }
+  .log-err { color: #e05252; }
+  .log-info { color: var(--text-main); }
+  .log-warn { color: var(--py-yellow); }
+  @keyframes blink { 50% { opacity: 0; } }
+  .cursor { display: inline-block; width: 7px; height: 14px; background: var(--py-yellow); animation: blink 1s step-start infinite; vertical-align: middle; margin-left: 3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; animation: spin 1s linear infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <svg class="py-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24.047 5c-1.555.025-3.04.154-4.36.354C15.7 6.053 14.97 7.74 14.97 10.14v3.36h9.17v1.12H10.69c-2.67 0-5.01 1.605-5.74 4.66-.845 3.5-.883 5.683 0 9.33.653 2.716 2.213 4.66 4.883 4.66h3.16v-4.2c0-3.037 2.626-5.715 5.74-5.715h9.16c2.556 0 4.59-2.103 4.59-4.67v-8.75c0-2.49-2.1-4.36-4.59-4.715A38.6 38.6 0 0 0 24.047 5zm-4.95 2.69c.95 0 1.72.783 1.72 1.75S20.047 11.19 19.097 11.19c-.953 0-1.73-.775-1.73-1.75s.777-1.75 1.73-1.75z" fill="#4b8bbe"/>
+      <path d="M33.964 14.62v4.08c0 3.168-2.682 5.835-5.74 5.835h-9.16c-2.514 0-4.59 2.148-4.59 4.67v8.75c0 2.49 2.166 3.952 4.59 4.67 2.906.852 5.694.004 9.16 0 2.908 0 4.59-1.576 4.59-4.67v-3.5h-9.16v-1.17h13.75c2.672 0 3.668-1.865 4.59-4.66 1.024-3.077.98-6.036 0-9.33-.704-2.657-1.914-4.66-4.59-4.66h-3.44zm-5.16 19.95c.955 0 1.73.776 1.73 1.75s-.775 1.75-1.73 1.75c-.948 0-1.72-.776-1.72-1.75s.772-1.75 1.72-1.75z" fill="#ffd43b"/>
+    </svg>
+    <h1>Agentes Python para Engenharia de Software</h1>
+  </div>
+  <span class="badge">Pipeline Multiagente · LangGraph · Ollama</span>
+</header>
+
+<main>
+  <aside class="sidebar">
+    <div>
+      <label for="req">Especificação do Sistema</label>
+      <textarea id="req" placeholder="Insira os requisitos da aplicação..." spellcheck="false"></textarea>
+    </div>
+    <div>
+      <label>Exemplos Rápidos</label>
+      <div class="examples">
+        <button class="example-btn" onclick="setExample(this)">Conversor de números inteiros para algarismos romanos</button>
+        <button class="example-btn" onclick="setExample(this)">Gerador de senhas seguras com opções de tamanho e caracteres especiais</button>
+        <button class="example-btn" onclick="setExample(this)">Sistema de estoque simples com controle de entrada, saída e alerta de quantidade mínima</button>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="startRun()">
+      <span id="runIcon">▶</span>
+      <span id="runLabel">Gerar Código</span>
+    </button>
+    <div class="pipeline-container">
+      <label>Pipeline</label>
+      <div class="agent-step step" id="step1">
+        <div class="step-title">
+          <span>Agente 1 — Gerador de Código</span>
+          <span class="step-status" id="status1">Aguardando</span>
+        </div>
+        <div class="step-logs" id="logs1"><span class="cursor"></span></div>
+      </div>
+      <div class="agent-step step" id="step2">
+        <div class="step-title">
+          <span>Agente 2 — Agente Crítico</span>
+          <span class="step-status soon" id="status2">Em breve</span>
+        </div>
+        <div class="step-logs" id="logs2"></div>
+      </div>
+      <div class="agent-step step" id="step3">
+        <div class="step-title">
+          <span>Agente 3 — Agente Refatorador</span>
+          <span class="step-status soon" id="status3">Em breve</span>
+        </div>
+        <div class="step-logs" id="logs3"></div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="editor-area">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('code')">main.py</button>
+      <button class="tab" onclick="switchTab('report')">system_logs.out</button>
+    </div>
+    <div class="tab-content active" id="tab-code">
+      <div class="editor-header">
+        <span class="file-name">~/projetos/gerado/main.py</span>
+        <button class="action-btn" id="copyBtn" onclick="copyCode()">Copiar Código</button>
+      </div>
+      <div class="empty-state" id="codePlaceholder">
+        <span class="empty-icon">
+          <svg width="40" height="40" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" opacity="0.4">
+            <path d="M24.047 5c-1.555.025-3.04.154-4.36.354C15.7 6.053 14.97 7.74 14.97 10.14v3.36h9.17v1.12H10.69c-2.67 0-5.01 1.605-5.74 4.66-.845 3.5-.883 5.683 0 9.33.653 2.716 2.213 4.66 4.883 4.66h3.16v-4.2c0-3.037 2.626-5.715 5.74-5.715h9.16c2.556 0 4.59-2.103 4.59-4.67v-8.75c0-2.49-2.1-4.36-4.59-4.715A38.6 38.6 0 0 0 24.047 5zm-4.95 2.69c.95 0 1.72.783 1.72 1.75S20.047 11.19 19.097 11.19c-.953 0-1.73-.775-1.73-1.75s.777-1.75 1.73-1.75z" fill="#4b8bbe"/>
+            <path d="M33.964 14.62v4.08c0 3.168-2.682 5.835-5.74 5.835h-9.16c-2.514 0-4.59 2.148-4.59 4.67v8.75c0 2.49 2.166 3.952 4.59 4.67 2.906.852 5.694.004 9.16 0 2.908 0 4.59-1.576 4.59-4.67v-3.5h-9.16v-1.17h13.75c2.672 0 3.668-1.865 4.59-4.66 1.024-3.077.98-6.036 0-9.33-.704-2.657-1.914-4.66-4.59-4.66h-3.44zm-5.16 19.95c.955 0 1.73.776 1.73 1.75s-.775 1.75-1.73 1.75c-.948 0-1.72-.776-1.72-1.75s.772-1.75 1.72-1.75z" fill="#ffd43b"/>
+          </svg>
+        </span>
+        O código gerado será renderizado neste painel.
+      </div>
+      <pre id="codeOutput" style="display:none;"></pre>
+    </div>
+    <div class="tab-content" id="tab-report">
+      <div class="editor-header">
+        <span class="file-name">~/projetos/gerado/logs/pytest.log</span>
+      </div>
+      <div class="empty-state" id="reportPlaceholder">
+        <span class="log-icon">// log</span>
+        Os relatórios de testes aparecerão aqui.
+      </div>
+      <pre id="reportOutput" style="display:none; color:var(--text-muted)"></pre>
+    </div>
+  </section>
+</main>
+
+<script>
+  let currentCode = "";
+  let activeTab = "code";
+
+  function setExample(btn) {
+    document.getElementById("req").value = btn.textContent.trim();
+  }
+
+  function switchTab(name) {
+    activeTab = name;
+    document.querySelectorAll(".tab").forEach((t, i) => {
+      t.classList.toggle("active", ["code","report"][i] === name);
+    });
+    document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+  }
+
+  function setStep(n, status) {
+    const step = document.getElementById("step" + n);
+    const statusLabel = document.getElementById("status" + n);
+    step.classList.remove("running", "done", "error");
+    const labels = { waiting: "Aguardando", running: "Processando", done: "Concluído", error: "Falha" };
+    if(status !== "waiting") step.classList.add(status);
+    statusLabel.textContent = labels[status];
+  }
+
+  function addLog(agent, msg) {
+    const el = document.getElementById("logs" + agent);
+    const cursor = el.querySelector('.cursor');
+    if(cursor) cursor.remove();
+    const line = document.createElement("div");
+    if (msg.includes("✓") || msg.includes("PASSED")) line.className = "log-ok";
+    else if (msg.includes("✗") || msg.includes("FAILED") || msg.toLowerCase().includes("erro")) line.className = "log-err";
+    else if (msg.includes("Melhorando") || msg.includes("Validando")) line.className = "log-warn";
+    else line.className = "log-info";
+    line.textContent = "> " + msg;
+    el.appendChild(line);
+    if(document.getElementById("step" + agent).classList.contains("running")) {
+      const c = document.createElement("span");
+      c.className = "cursor";
+      el.appendChild(c);
+    }
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function resetUI() {
+    setStep(1, "waiting");
+    document.getElementById("logs1").innerHTML = '<span class="cursor"></span>';
+    document.getElementById("logs2").innerHTML = '';
+    document.getElementById("logs3").innerHTML = '';
+    document.getElementById("status2").textContent = "Em breve";
+    document.getElementById("status3").textContent = "Em breve";
+
+    document.getElementById("codePlaceholder").style.display = "flex";
+    document.getElementById("codeOutput").style.display = "none";
+    document.getElementById("copyBtn").classList.remove("visible");
+    document.getElementById("codeOutput").textContent = "";
+    document.getElementById("reportPlaceholder").style.display = "flex";
+    document.getElementById("reportOutput").style.display = "none";
+    document.getElementById("reportOutput").textContent = "";
+    currentCode = "";
+  }
+
+  async function startRun() {
+    const req = document.getElementById("req").value.trim();
+    if (!req) return;
+    resetUI();
+    const btn = document.getElementById("runBtn");
+    document.getElementById("runIcon").className = "spinner";
+    document.getElementById("runIcon").textContent = "⟳";
+    document.getElementById("runLabel").textContent = "Sintetizando...";
+    btn.disabled = true;
+    const res = await fetch("/generate", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({requirements: req})
+    });
+    const {run_id} = await res.json();
+    const es = new EventSource("/stream/" + run_id);
+    es.addEventListener("agent_status", e => {
+      const d = JSON.parse(e.data);
+      const status = d.status === "running" ? "running" : d.status === "done" ? "done" : "error";
+      setStep(d.agent, status);
+      if (d.msg) addLog(d.agent, d.msg);
+    });
+    es.addEventListener("log", e => {
+      const d = JSON.parse(e.data);
+      addLog(d.agent, d.msg);
+    });
+    es.addEventListener("code", e => {
+      const d = JSON.parse(e.data);
+      currentCode = d.code;
+      document.getElementById("codePlaceholder").style.display = "none";
+      document.getElementById("codeOutput").style.display = "block";
+      document.getElementById("codeOutput").textContent = d.code;
+      document.getElementById("copyBtn").classList.add("visible");
+    });
+    es.addEventListener("done", () => {
+      es.close();
+      document.getElementById("runIcon").className = "";
+      document.getElementById("runIcon").textContent = "▶";
+      document.getElementById("runLabel").textContent = "Gerar Código";
+      btn.disabled = false;
+      document.querySelectorAll('.cursor').forEach(c => c.remove());
+      document.getElementById("status2").textContent = "Em breve";
+      document.getElementById("status3").textContent = "Em breve";
+    });
+    es.onerror = () => {
+      es.close();
+      btn.disabled = false;
+      document.getElementById("runIcon").className = "";
+      document.getElementById("runIcon").textContent = "▶";
+      document.getElementById("runLabel").textContent = "Gerar Código";
+    };
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(currentCode).then(() => {
+      const btn = document.getElementById("copyBtn");
+      btn.textContent = "Copiado!";
+      setTimeout(() => btn.textContent = "Copiar Código", 1500);
+    });
+  }
+</script>
+</body>
+</html>
