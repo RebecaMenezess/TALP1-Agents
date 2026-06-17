@@ -1,0 +1,58 @@
+[
+  {
+    "id": "caso_001",
+    "descricao": "Divisão por zero com lista vazia — ENTRADA_EXTREMA clássica",
+    "requisito": "Crie uma função chamada 'calcular_media' que receba uma lista de números e retorne a média deles.",
+    "codigo_com_bug": "def calcular_media(numeros):\n    soma = sum(numeros)\n    return soma / len(numeros)",
+    "bugs_conhecidos": ["lista_vazia", "divisao_por_zero"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_002",
+    "descricao": "Mutação silenciosa de lista — ESTADO_MUTAVEL",
+    "requisito": "Crie uma função 'remover_duplicatas' que receba uma lista e retorne uma nova lista sem elementos duplicados.",
+    "codigo_com_bug": "def remover_duplicatas(lista):\n    seen = set()\n    i = 0\n    while i < len(lista):\n        if lista[i] in seen:\n            lista.pop(i)  # bug: modifica a lista original do chamador\n        else:\n            seen.add(lista[i])\n            i += 1\n    return lista",
+    "bugs_conhecidos": ["mutacao_argumento", "side_effect"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_003",
+    "descricao": "Índice fora do limite — LIMITE_CONTRATO",
+    "requisito": "Crie uma função 'primeiro_elemento' que retorne o primeiro item de uma lista.",
+    "codigo_com_bug": "def primeiro_elemento(lista):\n    return lista[0]",
+    "bugs_conhecidos": ["lista_vazia", "index_error"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_004",
+    "descricao": "None não tratado — TIPO_INCORRETO",
+    "requisito": "Crie uma função 'contar_palavras' que receba uma string e retorne o número de palavras.",
+    "codigo_com_bug": "def contar_palavras(texto):\n    return len(texto.split())",
+    "bugs_conhecidos": ["none_input", "attribute_error"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_005",
+    "descricao": "Código correto — NÃO deve falhar (mede Falso Positivo)",
+    "requisito": "Crie uma função 'somar_lista' que receba uma lista de números e retorne a soma. Retorne 0 se a lista estiver vazia.",
+    "codigo_com_bug": "def somar_lista(numeros):\n    if not numeros:\n        return 0\n    return sum(numeros)",
+    "bugs_conhecidos": [],
+    "deve_falhar": false
+  },
+  {
+    "id": "caso_006",
+    "descricao": "Overflow com número muito grande — OVERFLOW",
+    "requisito": "Crie uma função 'fatorial' que calcule o fatorial de um número inteiro não-negativo.",
+    "codigo_com_bug": "def fatorial(n):\n    if n < 0:\n        raise ValueError('Negativo')\n    resultado = 1\n    for i in range(1, n + 1):\n        resultado *= i\n    return resultado",
+    "bugs_conhecidos": ["tipo_float", "recursion_overflow"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_007",
+    "descricao": "Busca em dicionário sem chave padrão — TIPO_INCORRETO",
+    "requisito": "Crie uma função 'buscar_nota' que receba um dicionário de notas e um nome de aluno, retornando a nota do aluno.",
+    "codigo_com_bug": "def buscar_nota(notas, aluno):\n    return notas[aluno]",
+    "bugs_conhecidos": ["chave_inexistente", "key_error"],
+    "deve_falhar": true
+  }
+]

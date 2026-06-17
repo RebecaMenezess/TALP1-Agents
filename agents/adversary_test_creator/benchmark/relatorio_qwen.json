@@ -1,0 +1,85 @@
+{
+  "modelo": "qwen2.5-coder:7b",
+  "total_casos": 7,
+  "verdadeiros_positivos": 6,
+  "falsos_positivos": 1,
+  "falsos_negativos": 0,
+  "testes_com_sintaxe_valida": 7,
+  "precision": 0.8571,
+  "recall": 1.0,
+  "f1": 0.9231,
+  "taxa_sintaxe_valida": 1.0,
+  "tempo_medio_segundos": 152.84,
+  "casos": [
+    {
+      "id": "caso_001",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 46.95,
+      "categoria_detectada": "ENTRADA_EXTREMA",
+      "severidade_detectada": "CRITICA",
+      "erro": null
+    },
+    {
+      "id": "caso_002",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 182.97,
+      "categoria_detectada": "ESTADO_MUTAVEL",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_003",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 176.94,
+      "categoria_detectada": "ENTRADA_EXTREMA",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_004",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 179.57,
+      "categoria_detectada": "ENTRADA_EXTREMA",
+      "severidade_detectada": "BAIXA",
+      "erro": null
+    },
+    {
+      "id": "caso_005",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 171.98,
+      "categoria_detectada": "TIPO_INCORRETO",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_006",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 87.54,
+      "categoria_detectada": "TIPO_INCORRETO",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_007",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 223.93,
+      "categoria_detectada": "TIPO_INCORRETO",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    }
+  ]
+}
