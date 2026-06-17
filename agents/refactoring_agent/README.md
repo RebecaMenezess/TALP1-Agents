@@ -6,7 +6,7 @@ Agente de IA que refatora código Python usando as técnicas do livro **"Refator
 
 - Python 3.10+
 - [Ollama](https://ollama.com) instalado e rodando
-- Modelo baixado: `ollama pull llama3.1:8b`
+- Modelo baixado: `ollama pull qwen2.5-coder:7b`
 
 ## Instalação
 
