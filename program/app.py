@@ -10,8 +10,6 @@ from flask import Flask, render_template, request, Response, stream_with_context
 
 app = Flask(__name__, template_folder='.')
 
-# ── fila de stream por requisição ─────────────────────────────────────────────
-# Cada execução de geração ganha sua própria fila; o SSE a esvazia.
 _runs: dict[str, queue.Queue] = {}
 
 
@@ -22,25 +20,19 @@ def _push(run_id: str, event: str, data: dict):
 
 def _done(run_id: str):
     if run_id in _runs:
-        _runs[run_id].put(None)          # sentinela
+        _runs[run_id].put(None)          
 
 
-# ── Executor do Agente 1 (roda em uma thread) ────────────────────────────────
 def run_agent1(run_id: str, requirements: str):
     try:
-        # Resolve o caminho do agente com base na estrutura de pastas:
-        # app.py está em /program
-        # O agente está em /agents/code/generator
         base_dir = os.path.dirname(os.path.abspath(__file__))
         agent_dir = os.path.abspath(os.path.join(base_dir, "..", "agents", "code_generator"))
         
-        # Importa o agente inline para que o Flask não precise reiniciar ao alterar o código
         sys.path.insert(0, agent_dir)
         import importlib, types
 
         _push(run_id, "agent_status", {"agent": 1, "status": "running", "msg": "Gerando código…"})
 
-        # ── faz um monkey-patch nos métodos do agente para capturar as linhas de log ──
         import code_generator_agent as cga
 
         original_validate = cga.validate_code_node
@@ -79,7 +71,6 @@ def run_agent1(run_id: str, requirements: str):
         cga.improve_code   = patched_improve
         cga.save_outputs   = patched_save
 
-        # recria o grafo com os nós modificados (patched)
         from langgraph.graph import StateGraph, END
         graph = StateGraph(cga.AgentState)
         graph.add_node("generate", cga.generate_code)
@@ -106,7 +97,6 @@ def run_agent1(run_id: str, requirements: str):
     except Exception as exc:
         _push(run_id, "agent_status", {"agent": 1, "status": "error", "msg": str(exc)})
     finally:
-        # restaura os originais
         try:
             cga.generate_code      = original_generate
             cga.validate_code_node = original_validate
@@ -117,7 +107,6 @@ def run_agent1(run_id: str, requirements: str):
         _done(run_id)
 
 
-# ── Rotas ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
