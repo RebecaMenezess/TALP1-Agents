@@ -1,0 +1,95 @@
+{
+  "modelo": "qwen2.5-coder:7b",
+  "total_casos": 8,
+  "verdadeiros_positivos": 6,
+  "falsos_positivos": 0,
+  "falsos_negativos": 1,
+  "testes_com_sintaxe_valida": 8,
+  "precision": 1.0,
+  "recall": 0.8571,
+  "f1": 0.9231,
+  "taxa_sintaxe_valida": 1.0,
+  "tempo_medio_segundos": 252.84,
+  "casos": [
+    {
+      "id": "caso_001",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 328.98,
+      "categoria_detectada": "ENTRADA_EXTREMA",
+      "severidade_detectada": "BAIXA",
+      "erro": null
+    },
+    {
+      "id": "caso_002",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 304.41,
+      "categoria_detectada": "ESTADO_MUTAVEL",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_003",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 244.98,
+      "categoria_detectada": "ESTADO_MUTAVEL",
+      "severidade_detectada": "CRITICA",
+      "erro": null
+    },
+    {
+      "id": "caso_004",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 426.29,
+      "categoria_detectada": "TIPO_INCORRETO",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_005",
+      "contraexemplo_confirmado": false,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 245.82,
+      "categoria_detectada": "NENHUMA",
+      "severidade_detectada": "NENHUMA",
+      "erro": null
+    },
+    {
+      "id": "caso_006",
+      "contraexemplo_confirmado": false,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 123.37,
+      "categoria_detectada": "NENHUMA",
+      "severidade_detectada": "NENHUMA",
+      "erro": null
+    },
+    {
+      "id": "caso_007",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 160.66,
+      "categoria_detectada": "ENTRADA_EXTREMA",
+      "severidade_detectada": "ALTA",
+      "erro": null
+    },
+    {
+      "id": "caso_008",
+      "contraexemplo_confirmado": true,
+      "erro_sintaxe": false,
+      "tentativas_autocorrecao": 0,
+      "tempo_segundos": 188.22,
+      "categoria_detectada": "ESTOURO_CAPACIDADE",
+      "severidade_detectada": "CRITICA",
+      "erro": null
+    }
+  ]
+}
