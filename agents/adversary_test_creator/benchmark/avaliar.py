@@ -41,6 +41,7 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from agent.core import QAAgent
+from agent.schema import codigo_declarado_seguro
 from runner.executor import TestRunner
 
 logging.basicConfig(
@@ -114,11 +115,14 @@ def executar_benchmark(model_name: str, dataset_path: str) -> RelatorioFinal:
             resultado_caso.categoria_detectada = resultado_agente.get("categoria_falha", "")
             resultado_caso.severidade_detectada = resultado_agente.get("severidade", "")
 
-            # 2. Execução com loop de autocorreção
-            resultado_exec = runner.executar(
-                codigo_candidato=caso["codigo_com_bug"],
-                codigo_teste=resultado_agente["codigo_pytest"],
-            )
+            # 2. Execução com loop de autocorreção (omitida se NENHUMA)
+            if codigo_declarado_seguro(resultado_agente):
+                resultado_exec = TestRunner.resultado_codigo_seguro()
+            else:
+                resultado_exec = runner.executar(
+                    codigo_candidato=caso["codigo_com_bug"],
+                    codigo_teste=resultado_agente["codigo_pytest"],
+                )
 
             while resultado_exec.erro_sintaxe_no_teste and tentativas < agente.max_retries:
                 tentativas += 1

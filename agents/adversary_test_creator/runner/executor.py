@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 import shutil
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -102,12 +102,8 @@ class TestRunner:
 
             # ── Classifica o resultado ───────────────────────────────────────
             erro_sintaxe = self._detectar_erro_sintaxe(saida_completa)
-            contraexemplo = (
-                not erro_sintaxe
-                and (
-                    "FAILED" in proc.stdout
-                    or proc.returncode not in (0, 5)  # 5 = nenhum teste coletado
-                )
+            contraexemplo = self._detectar_contraexemplo(
+                proc.returncode, proc.stdout, saida_completa, erro_sintaxe
             )
 
             return ResultadoExecucao(
@@ -124,13 +120,26 @@ class TestRunner:
                 shutil.rmtree(sandbox, ignore_errors=True)
                 logger.info("Sandbox removida: %s", sandbox)
 
+    @staticmethod
+    def resultado_codigo_seguro() -> ResultadoExecucao:
+        """Retorno sintético quando a LLM declarou categoria_falha=NENHUMA."""
+        return ResultadoExecucao(
+            contraexemplo_confirmado=False,
+            erro_sintaxe_no_teste=False,
+            stdout="Código declarado seguro (NENHUMA). Execução de pytest omitida.",
+            stderr="",
+            returncode=0,
+            sandbox_path="",
+        )
+
     # ── Helpers privados ────────────────────────────────────────────────────
 
     @staticmethod
     def _detectar_erro_sintaxe(saida: str) -> bool:
         """
-        Heurística para distinguir erro de sintaxe no teste gerado pela IA
-        de uma falha lógica real no código candidato (que é o objetivo).
+        Erros que impedem a execução do teste (corrigíveis via autocorreção).
+        ImportError/ModuleNotFoundError permanecem aqui — a autocorreção pode
+        ajustar imports inválidos no teste gerado.
         """
         marcadores = [
             "SyntaxError",
@@ -141,3 +150,34 @@ class TestRunner:
             "invalid syntax",
         ]
         return any(m in saida for m in marcadores)
+
+    @staticmethod
+    def _detectar_contraexemplo(
+        returncode: int,
+        stdout: str,
+        saida_completa: str,
+        erro_sintaxe: bool,
+    ) -> bool:
+        """
+        Contraexemplo confirmado quando pytest executou corretamente mas reportou falha.
+
+        Regra: returncode != 0 + ("failed" ou "error" na saída) + sem erro de sintaxe.
+
+        AssertionError aponta o traceback para o arquivo de teste (esperado) —
+        isso significa que o assert verificou o código candidato e a condição
+        não foi satisfeita, ou seja, o bug foi encontrado. Não exigimos que a
+        stack aponte para codigo_candidato.py, pois pytest.raises() e assert
+        legítimos nunca o fazem quando capturam erros do candidato.
+        """
+        if erro_sintaxe:
+            return False
+
+        if returncode == 0:
+            return False
+
+        # returncode 5 = nenhum teste coletado (teste vazio ou mal nomeado)
+        if returncode == 5:
+            return False
+
+        saida_lower = saida_completa.lower()
+        return "failed" in saida_lower or "error" in saida_lower

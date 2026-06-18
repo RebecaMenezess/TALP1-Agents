@@ -1,8 +1,5 @@
 """
-agent/core.py
--------------
-Responsabilidade ÚNICA: encapsular toda a comunicação com a LLM.
-Expõe a classe QAAgent que executa a análise principal e o loop de
+encapsula toda a comunicação com a LLM. Executa a análise principal e o loop de
 autocorreção. Não conhece o sistema de arquivos nem o runner de testes.
 """
 
@@ -17,6 +14,8 @@ from agent.schema import ContraexemploOutput
 from prompts.templates import ANALISE_E_TESTE_TEMPLATE, AUTOCORRECAO_TEMPLATE
 
 logger = logging.getLogger(__name__)
+
+MAX_TENTATIVAS_ANALISE = 3
 
 
 class QAAgent:
@@ -79,23 +78,45 @@ class QAAgent:
 
     def analisar(self, requisito: str, codigo: str) -> dict:
         """
-        Executa a análise principal e retorna o dict com os campos do schema.
+        Executa a análise principal com retry em falhas de parse JSON.
 
         Raises
         ------
         ValueError
-            Se a LLM não retornar um JSON válido após as tentativas.
+            Se a LLM não retornar um JSON válido após MAX_TENTATIVAS_ANALISE.
         """
-        logger.info("Iniciando análise com a LLM...")
-        resultado = self._chain_analise.invoke(
-            {"requisito": requisito, "codigo": codigo}
+        ultima_excecao: Optional[Exception] = None
+
+        for tentativa in range(1, MAX_TENTATIVAS_ANALISE + 1):
+            try:
+                logger.info(
+                    "Iniciando análise com a LLM (tentativa %d/%d)...",
+                    tentativa,
+                    MAX_TENTATIVAS_ANALISE,
+                )
+                resultado = self._chain_analise.invoke(
+                    {"requisito": requisito, "codigo": codigo}
+                )
+                logger.info(
+                    "Análise concluída. Categoria: %s | Severidade: %s",
+                    resultado.get("categoria_falha", "N/A"),
+                    resultado.get("severidade", "N/A"),
+                )
+                return resultado
+
+            except Exception as exc:
+                ultima_excecao = exc
+                logger.warning(
+                    "Falha no parse/validação JSON (tentativa %d/%d): %s",
+                    tentativa,
+                    MAX_TENTATIVAS_ANALISE,
+                    exc,
+                )
+
+        raise ValueError(
+            f"LLM não retornou JSON válido após {MAX_TENTATIVAS_ANALISE} tentativas: "
+            f"{ultima_excecao}"
         )
-        logger.info(
-            "Análise concluída. Categoria: %s | Severidade: %s",
-            resultado.get("categoria_falha", "N/A"),
-            resultado.get("severidade", "N/A"),
-        )
-        return resultado
 
     def autocorrigir(
         self,

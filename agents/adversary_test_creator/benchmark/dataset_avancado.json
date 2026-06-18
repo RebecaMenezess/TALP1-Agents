@@ -1,0 +1,34 @@
+[
+  {
+    "id": "adv_001",
+    "descricao": "Validador de sessão JWT com mutação de cache global — ESTADO_MUTAVEL (FN target)",
+    "requisito": "Crie a função 'processar_claims' que receba um token_id (str) e um dicionário claims contendo os dados do payload JWT. A função deve armazenar os claims em um cache global e retornar o dicionário enriquecido com as chaves internas '_processado' (True) e '_token_id'. Se o token já estiver no cache, retorne o valor cacheado sem reprocessar.",
+    "codigo_com_bug": "_TOKEN_STORE = {}\n\n\ndef processar_claims(token_id: str, claims: dict) -> dict:\n    if token_id in _TOKEN_STORE:\n        return _TOKEN_STORE[token_id]\n    claims[\"_processado\"] = True\n    claims[\"_token_id\"] = token_id\n    _TOKEN_STORE[token_id] = claims\n    return claims",
+    "bugs_conhecidos": ["mutacao_argumento_claims", "cache_por_referencia", "side_effect_caller"],
+    "deve_falhar": true
+  },
+  {
+    "id": "adv_002",
+    "descricao": "Cache thread-safe com Lock e try/finally — controle negativo complexo (FP target)",
+    "requisito": "Implemente a função 'cache_get_or_set' que receba uma chave (str) e um valor qualquer. Se a chave já existir no cache global, retorne o valor armazenado sem sobrescrever. Caso contrário, armazene o novo valor e retorne-o. A função deve ser thread-safe usando threading.Lock().",
+    "codigo_com_bug": "import threading\n\n_cache: dict = {}\n_lock = threading.Lock()\n\n\ndef cache_get_or_set(chave: str, valor) -> object:\n    with _lock:\n        try:\n            if chave not in _cache:\n                _cache[chave] = valor\n            return _cache[chave]\n        finally:\n            pass",
+    "bugs_conhecidos": [],
+    "deve_falhar": false
+  },
+  {
+    "id": "adv_003",
+    "descricao": "Cálculo de offset de paginação 1-indexed com off-by-one — CORRECAO_LOGICA (FN target)",
+    "requisito": "Crie a função 'calcular_offset' que receba pagina (int, começando em 1), itens_por_pagina (int) e total_itens (int). Retorne um dicionário com 'offset' (posição inicial para a query), 'limite' (quantidade de itens a buscar) e 'tem_proxima_pagina' (bool). Página 1 deve retornar offset 0.",
+    "codigo_com_bug": "def calcular_offset(pagina: int, itens_por_pagina: int, total_itens: int) -> dict:\n    offset = pagina * itens_por_pagina\n    limite = itens_por_pagina\n    tem_proxima = (offset + limite) < total_itens\n    return {\"offset\": offset, \"limite\": limite, \"tem_proxima_pagina\": tem_proxima}",
+    "bugs_conhecidos": ["off_by_one", "pagina1_offset_errado", "indexacao_1based"],
+    "deve_falhar": true
+  },
+  {
+    "id": "adv_004",
+    "descricao": "Pipeline de processamento em lote com fallback por exceção — controle negativo complexo (FP target)",
+    "requisito": "Crie 'processar_lote' que receba uma lista de itens, uma função processadora callable e um tamanho_lote inteiro (padrão 10). Processe os itens em fatias de tamanho_lote, aplique o processador a cada item individualmente. Itens que lançarem qualquer exceção devem ter seu índice original registrado em 'erros' e o processamento deve continuar. Retorne um dicionário com 'sucesso' (lista de resultados válidos) e 'erros' (lista de índices dos itens que falharam).",
+    "codigo_com_bug": "from typing import Any, Callable, List\n\n\ndef processar_lote(\n    itens: List[Any],\n    processador: Callable[[Any], Any],\n    tamanho_lote: int = 10,\n) -> dict:\n    sucesso = []\n    erros = []\n    for i in range(0, len(itens), tamanho_lote):\n        lote = itens[i:i + tamanho_lote]\n        for j, item in enumerate(lote):\n            try:\n                resultado = processador(item)\n                sucesso.append(resultado)\n            except Exception:\n                erros.append(i + j)\n    return {\"sucesso\": sucesso, \"erros\": erros}",
+    "bugs_conhecidos": [],
+    "deve_falhar": false
+  }
+]

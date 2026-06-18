@@ -1,58 +1,66 @@
 [
   {
     "id": "caso_001",
-    "descricao": "Divisão por zero com lista vazia — ENTRADA_EXTREMA clássica",
-    "requisito": "Crie uma função chamada 'calcular_media' que receba uma lista de números e retorne a média deles.",
-    "codigo_com_bug": "def calcular_media(numeros):\n    soma = sum(numeros)\n    return soma / len(numeros)",
-    "bugs_conhecidos": ["lista_vazia", "divisao_por_zero"],
+    "descricao": "Agregação de vendas em dict aninhado — ENTRADA_EXTREMA (None/estrutura inválida)",
+    "requisito": "Crie a função 'agregar_vendas' que receba um dicionário no formato {departamento: {produto: quantidade}} e retorne a soma total de todas as quantidades. Deve retornar 0 para relatório vazio.",
+    "codigo_com_bug": "from typing import Dict, Any\n\n\ndef agregar_vendas(relatorio: Dict[str, Dict[str, int]]) -> int:\n    \"\"\"Soma quantidades de um relatório de vendas aninhado.\"\"\"\n    total = 0\n    for departamento in relatorio.values():\n        for quantidade in departamento.values():\n            total += quantidade\n    return total",
+    "bugs_conhecidos": ["relatorio_none", "departamento_none", "quantidade_none"],
     "deve_falhar": true
   },
   {
     "id": "caso_002",
-    "descricao": "Mutação silenciosa de lista — ESTADO_MUTAVEL",
-    "requisito": "Crie uma função 'remover_duplicatas' que receba uma lista e retorne uma nova lista sem elementos duplicados.",
-    "codigo_com_bug": "def remover_duplicatas(lista):\n    seen = set()\n    i = 0\n    while i < len(lista):\n        if lista[i] in seen:\n            lista.pop(i)  # bug: modifica a lista original do chamador\n        else:\n            seen.add(lista[i])\n            i += 1\n    return lista",
-    "bugs_conhecidos": ["mutacao_argumento", "side_effect"],
+    "descricao": "Decorator memoizar com efeito colateral — ESTADO_MUTAVEL",
+    "requisito": "Implemente um decorator 'memoizar' que cacheia resultados de funções puras por argumentos, e a função 'enriquecer_lote' que recebe uma lista de strings, adiciona o sufixo '_ok' a cada item e retorna a lista enriquecida. O cache não deve alterar chamadas futuras com os mesmos argumentos.",
+    "codigo_com_bug": "def memoizar(func):\n    cache = {}\n\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n\n    return wrapper\n\n\n@memoizar\ndef enriquecer_lote(itens):\n    for i, item in enumerate(itens):\n        itens[i] = item + '_ok'\n    return itens",
+    "bugs_conhecidos": ["cache_referencia_mutavel", "mutacao_argumento", "side_effect"],
     "deve_falhar": true
   },
   {
     "id": "caso_003",
-    "descricao": "Índice fora do limite — LIMITE_CONTRATO",
-    "requisito": "Crie uma função 'primeiro_elemento' que retorne o primeiro item de uma lista.",
-    "codigo_com_bug": "def primeiro_elemento(lista):\n    return lista[0]",
-    "bugs_conhecidos": ["lista_vazia", "index_error"],
+    "descricao": "Merge de configuração com mutação do dict base — ESTADO_MUTAVEL",
+    "requisito": "Crie 'mesclar_config' que receba um dicionário base e um dicionário de overrides, retornando um NOVO dicionário mesclado recursivamente para chaves aninhadas. O dicionário base original não pode ser modificado.",
+    "codigo_com_bug": "from copy import deepcopy\n\n\ndef mesclar_config(base: dict, overrides: dict) -> dict:\n    config = base\n    for chave, valor in overrides.items():\n        if isinstance(valor, dict) and chave in config and isinstance(config[chave], dict):\n            config[chave].update(valor)\n        else:\n            config[chave] = valor\n    return config",
+    "bugs_conhecidos": ["mutacao_base", "shallow_merge", "side_effect"],
     "deve_falhar": true
   },
   {
     "id": "caso_004",
-    "descricao": "None não tratado — TIPO_INCORRETO",
-    "requisito": "Crie uma função 'contar_palavras' que receba uma string e retorne o número de palavras.",
-    "codigo_com_bug": "def contar_palavras(texto):\n    return len(texto.split())",
-    "bugs_conhecidos": ["none_input", "attribute_error"],
+    "descricao": "Pipeline de parsing de registros delimitados — TIPO_INCORRETO",
+    "requisito": "Crie 'parse_registros' que receba uma lista de strings no formato 'id|nome|valor' e retorne uma lista de dicts {'id': int, 'nome': str, 'valor': float}. Linhas malformadas devem ser ignoradas silenciosamente.",
+    "codigo_com_bug": "def parse_registros(linhas):\n    registros = []\n    for linha in linhas:\n        partes = linha.split('|')\n        if len(partes) < 3:\n            continue\n        registros.append({\n            'id': int(partes[0]),\n            'nome': partes[1],\n            'valor': float(partes[2]),\n        })\n    return registros",
+    "bugs_conhecidos": ["id_nao_numerico", "valor_nao_numerico", "linha_vazia"],
     "deve_falhar": true
   },
   {
     "id": "caso_005",
-    "descricao": "Código correto — NÃO deve falhar (mede Falso Positivo)",
-    "requisito": "Crie uma função 'somar_lista' que receba uma lista de números e retorne a soma. Retorne 0 se a lista estiver vazia.",
-    "codigo_com_bug": "def somar_lista(numeros):\n    if not numeros:\n        return 0\n    return sum(numeros)",
+    "descricao": "Estatísticas robustas — controle negativo (NENHUMA)",
+    "requisito": "Crie 'calcular_estatisticas' que receba uma lista de números e retorne um dict com chaves 'media', 'minimo', 'maximo' e 'total' (contagem). Para lista vazia, retorne media=0.0, minimo=None, maximo=None, total=0.",
+    "codigo_com_bug": "from typing import List, Optional\n\n\ndef calcular_estatisticas(valores: List[float]) -> dict:\n    if not valores:\n        return {\n            'media': 0.0,\n            'minimo': None,\n            'maximo': None,\n            'total': 0,\n        }\n    return {\n        'media': sum(valores) / len(valores),\n        'minimo': min(valores),\n        'maximo': max(valores),\n        'total': len(valores),\n    }",
     "bugs_conhecidos": [],
     "deve_falhar": false
   },
   {
     "id": "caso_006",
-    "descricao": "Overflow com número muito grande — OVERFLOW",
-    "requisito": "Crie uma função 'fatorial' que calcule o fatorial de um número inteiro não-negativo.",
-    "codigo_com_bug": "def fatorial(n):\n    if n < 0:\n        raise ValueError('Negativo')\n    resultado = 1\n    for i in range(1, n + 1):\n        resultado *= i\n    return resultado",
-    "bugs_conhecidos": ["tipo_float", "recursion_overflow"],
+    "descricao": "Expansão de intervalo sem limite — ESTOURO_CAPACIDADE",
+    "requisito": "Crie 'expandir_intervalo' que receba inicio e fim (inteiros inclusivos) e retorne uma lista com todos os inteiros do intervalo. Deve rejeitar intervalos inválidos onde fim < inicio.",
+    "codigo_com_bug": "def expandir_intervalo(inicio: int, fim: int) -> list:\n    if fim < inicio:\n        raise ValueError('Intervalo inválido')\n    resultado = []\n    atual = inicio\n    while atual <= fim:\n        resultado.append(atual)\n        atual += 1\n    return resultado",
+    "bugs_conhecidos": ["intervalo_gigante", "estouro_memoria", "sem_limite_superior"],
     "deve_falhar": true
   },
   {
     "id": "caso_007",
-    "descricao": "Busca em dicionário sem chave padrão — TIPO_INCORRETO",
-    "requisito": "Crie uma função 'buscar_nota' que receba um dicionário de notas e um nome de aluno, retornando a nota do aluno.",
-    "codigo_com_bug": "def buscar_nota(notas, aluno):\n    return notas[aluno]",
-    "bugs_conhecidos": ["chave_inexistente", "key_error"],
+    "descricao": "Navegação em dict aninhado — TIPO_INCORRETO",
+    "requisito": "Crie 'buscar_caminho' que receba um dict aninhado e uma lista de chaves representando o caminho (ex: ['usuarios', 'admin', 'email']). Retorne o valor final ou None se qualquer chave do caminho não existir.",
+    "codigo_com_bug": "from typing import Any, List, Optional\n\n\ndef buscar_caminho(no: dict, caminho: List[str]) -> Optional[Any]:\n    atual = no\n    for chave in caminho:\n        atual = atual[chave]\n    return atual",
+    "bugs_conhecidos": ["key_error", "type_error", "caminho_inexistente"],
+    "deve_falhar": true
+  },
+  {
+    "id": "caso_008",
+    "descricao": "Paginação 1-indexed — CORRECAO_LOGICA (off-by-one)",
+    "requisito": "Crie 'paginar' que receba uma lista de itens, o número da página (começando em 1) e o tamanho da página (padrão 10). Retorne a fatia correspondente. Página 1 deve retornar os primeiros 'tamanho_pagina' itens.",
+    "codigo_com_bug": "def paginar(itens, pagina, tamanho_pagina=10):\n    inicio = pagina * tamanho_pagina\n    fim = inicio + tamanho_pagina\n    return itens[inicio:fim]",
+    "bugs_conhecidos": ["off_by_one", "pagina_1_errada", "indexacao_zero"],
     "deve_falhar": true
   }
 ]

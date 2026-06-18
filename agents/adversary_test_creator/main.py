@@ -1,6 +1,4 @@
 """
-main.py
--------
 Orquestrador principal — THIN CONTROLLER.
 Responsabilidade: conectar os módulos e exibir o resultado no terminal.
 NÃO contém lógica de negócio, prompts, I/O de arquivos ou subprocess.
@@ -11,6 +9,7 @@ import logging
 import sys
 
 from agent.core import QAAgent
+from agent.schema import codigo_declarado_seguro
 from runner.executor import TestRunner
 
 # ── Configuração de logging ─────────────────────────────────────────────────
@@ -24,11 +23,7 @@ logger = logging.getLogger("main")
 
 # ── Configurações ───────────────────────────────────────────────────────────
 #
-# Troque o modelo conforme sua disponibilidade no Ollama:
-#   qwen2.5-coder:7b   → RECOMENDADO para esta tarefa (melhor JSON + Python)
-#   deepseek-coder:6.7b → Ótimo para análise lógica
-#   llama3.1:8b         → Boa alternativa generalista
-#
+# Trocas o modelo conforme 
 MODEL_NAME = "qwen2.5-coder:7b"
 MAX_RETRIES_AUTOCORRECAO = 3
 
@@ -77,12 +72,18 @@ if __name__ == "__main__":
 
     # ── ETAPA 2: Execução do teste + loop de autocorreção ───────────────────
     print("\n[ETAPA 2] Executando teste na sandbox...")
-    resultado_exec = runner.executar(
-        codigo_candidato=mock_codigo_com_bug,
-        codigo_teste=resultado_agente["codigo_pytest"],
-    )
+    if codigo_declarado_seguro(resultado_agente):
+        print("\n  Código declarado SEGURO pela LLM (categoria_falha=NENHUMA).")
+        print("  Pytest omitido — nenhum contraexemplo a validar.")
+        resultado_exec = TestRunner.resultado_codigo_seguro()
+        tentativa = 0
+    else:
+        resultado_exec = runner.executar(
+            codigo_candidato=mock_codigo_com_bug,
+            codigo_teste=resultado_agente["codigo_pytest"],
+        )
+        tentativa = 0
 
-    tentativa = 0
     while resultado_exec.erro_sintaxe_no_teste and tentativa < MAX_RETRIES_AUTOCORRECAO:
         tentativa += 1
         print(f"\n  ⚠ Erro de sintaxe no teste gerado. Acionando autocorreção (tentativa {tentativa}/{MAX_RETRIES_AUTOCORRECAO})...")
@@ -130,9 +131,14 @@ if __name__ == "__main__":
         print("\n--- Saída do terminal ---")
         print(resultado_exec.stdout or resultado_exec.stderr)
 
+    elif codigo_declarado_seguro(resultado_agente):
+        print("\n  ✅ CÓDIGO APROVADO — auditoria concluiu conformidade com o requisito.")
+        print(f"  Justificativa: {resultado_agente.get('analise_vulnerabilidade', '')}")
+
     else:
         print("\n  O código RESISTIU ao ataque do agente crítico.")
         print("  Nenhuma falha foi disparada pelo caso de teste gerado.")
 
-    print(f"\n  Arquivos de inspeção em: {resultado_exec.sandbox_path}")
+    if resultado_exec.sandbox_path:
+        print(f"\n  Arquivos de inspeção em: {resultado_exec.sandbox_path}")
     print("=" * 60)
